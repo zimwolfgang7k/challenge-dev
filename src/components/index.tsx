@@ -2,8 +2,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ICreateProposal } from './types';
+import api from '../services/api';
+import { useState } from 'react';
+import { toast } from 'react-toastify';
 
 const FormComponent = () => {
+    const [proposalData, setProposalData] = useState<ICreateProposal[]>([]);
+
     const createProposalFormSchema = z.object({
         full_name: z.string().nonempty('Nome é obrigatório').min(1).max(29),
         cpf: z.string().nonempty('CPF é obrigatório').min(1).max(11),
@@ -19,8 +24,34 @@ const FormComponent = () => {
         resolver: zodResolver(createProposalFormSchema),
     });
 
-    const createProposal = (data: ICreateProposal) => {
-        console.log(data);
+    const createProposal = async (data: ICreateProposal) => {
+        await api
+            .post<ICreateProposal[]>('proposals/', data)
+            .then(data => {
+                setProposalData(data.data);
+                toast.success('Proposta criada com sucesso', {
+                    position: 'top-right',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: 'light',
+                });
+            })
+            .catch(err =>
+                toast.error('Oops, algo deu errado', {
+                    position: 'top-right',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: 'light',
+                })
+            );
     };
 
     return (
